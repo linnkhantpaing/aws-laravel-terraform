@@ -89,7 +89,8 @@ resource "aws_s3_bucket_cors_configuration" "app" {
 
 # ---------------------------------------------------------------------------
 # Deployment artifact bucket
-#   release .zip files produced by GitHub Actions, consumed by CodeDeploy
+#   release .zip files uploaded by whatever CI you wire up (bootstrap/ creates
+#   an app-deploy OIDC role scoped for this), consumed by CodeDeploy
 #
 # Disposable -- every artifact is rebuildable from a git tag.
 # ---------------------------------------------------------------------------
