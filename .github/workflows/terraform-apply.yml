@@ -11,6 +11,15 @@ permissions:
   id-token: write
   contents: read
 
+# Without this, two merges landing close together spawn two parallel apply
+# jobs against the same remote state. use_lockfile makes the second one fail
+# outright on a lock error rather than corrupt state, but that's a confusing
+# failure to debug -- queue them instead so the second run applies cleanly
+# against the first run's result.
+concurrency:
+  group: terraform-apply-prod
+  cancel-in-progress: false
+
 env:
   TF_VERSION: "1.10.0" # must be >= 1.10 -- see envs/prod/providers.tf
   AWS_REGION: ap-southeast-7
