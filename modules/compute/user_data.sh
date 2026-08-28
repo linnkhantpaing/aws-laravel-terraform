@@ -4,6 +4,21 @@ set -euxo pipefail
 # Runs once at first boot. Installs the runtime; CodeDeploy delivers the app.
 # Must be saved with LF line endings -- CRLF breaks bash on Linux.
 
+# --- Wait for internet access ------------------------------------------------
+# This subnet has no NAT gateway; outbound internet only works once the
+# Elastic IP is associated (modules/compute/main.tf), which Terraform does
+# AFTER this instance exists -- but cloud-init starts running this script
+# independently as soon as the OS boots, with no guarantee the EIP has
+# attached yet. Without this wait, dnf update below can fail on a fresh
+# instance with no network, and `set -e` aborts the whole script right there.
+for i in $(seq 1 30); do
+  if curl -fsS -m 5 https://checkip.amazonaws.com >/dev/null 2>&1; then
+    break
+  fi
+  echo "Waiting for internet connectivity (attempt $i/30)..."
+  sleep 5
+done
+
 dnf update -y
 
 # --- PHP 8.3 + extensions Laravel needs -------------------------------------
