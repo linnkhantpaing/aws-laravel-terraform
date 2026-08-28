@@ -2,4 +2,4 @@
 # terraform.tfvars is gitignored.
 
 github_owner = "your-github-username"
-app_repo     = "ai-academy-platform"
+app_repo     = "your-app-repo" # e.g. myapp-platform -- the repo holding your application code

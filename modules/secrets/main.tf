@@ -37,9 +37,9 @@ locals {
       name        = "${var.secret_path}/reverb"
       description = "Laravel Reverb app ID, key, and secret"
     }
-    aya_pay = {
-      name        = "${var.secret_path}/aya-pay"
-      description = "AYA Pay account and QR reference info (manual flow -- NOT an API key)"
+    manual_payment_provider = {
+      name        = "${var.secret_path}/manual-payment-provider"
+      description = "Example: account/QR reference info for a manual, non-API local payment method -- replace with whatever your app integrates"
     }
     google_oauth = {
       name        = "${var.secret_path}/google-oauth"

@@ -1,8 +1,8 @@
-# Sample LMS Platform — AWS Phase 1 Infrastructure
+# AWS Phase 1 Infrastructure — Laravel Reference Stack
 
 Terraform for the Phase 1 architecture: single EC2 application server (Laravel 13 +
 React/Inertia + Reverb), RDS MySQL in private subnets, two S3 buckets, Secrets Manager,
-and CodeDeploy — all in `ap-southeast-7` (Thailand).
+and CodeDeploy — all in `ap-southeast-7` (example region; swap for whichever region you deploy to).
 
 ## Layout
 
@@ -113,4 +113,7 @@ The RDS master password is the exception — AWS generates and stores it
   SSRF-to-credential-theft path.
 - `prevent_destroy` guards the state bucket, the application bucket, and the RDS
   instance. Destroying any of them requires deliberately editing the lifecycle block.
-- The application bucket holds real users' payment screenshots. Keep this repo private.
+- The application bucket is meant for private, user-generated files (uploads, exports,
+  generated documents) — access is locked down with Block Public Access and presigned
+  URLs, not by keeping this repo private. Treat whatever you actually store there as
+  production data and adjust retention/versioning to match its sensitivity.

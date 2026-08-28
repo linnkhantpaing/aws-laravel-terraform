@@ -18,7 +18,7 @@ variable "github_owner" {
 variable "infra_repo" {
   description = "Repository holding Terraform code"
   type        = string
-  default     = "ai-academy-infra"
+  default     = "myapp-infra" # example -- rename to your own infra repo
 }
 
 variable "app_repo" {
