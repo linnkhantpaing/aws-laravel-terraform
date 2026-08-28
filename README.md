@@ -44,8 +44,10 @@ plan/apply/deploy pipeline against the same trust pattern if you want one.
 Uncomment the `backend "s3"` block in `envs/prod/backend.tf` and set `bucket` to the
 `state_bucket` output from step 1.
 
-If `terraform version` is below 1.10, remove `use_lockfile = true` and add a DynamoDB
-lock table to `bootstrap/` instead.
+This repo requires Terraform >= 1.10 (`required_version` in `providers.tf`) for
+native S3 state locking via `use_lockfile`. To support an older Terraform version
+instead, you'd need to relax `required_version`, remove `use_lockfile = true`, and
+add your own DynamoDB lock table to `bootstrap/`.
 
 ### 3. Main stack
 
