@@ -34,7 +34,10 @@ terraform plan -var-file=terraform.tfvars
 terraform apply -var-file=terraform.tfvars
 ```
 
-Note the outputs — you need `state_bucket` and the three role ARNs.
+Note the outputs. `state_bucket` feeds `envs/prod/backend.tf` in step 2. The
+three GitHub OIDC role ARNs aren't consumed by anything in this repo (no CI
+workflow ships here) -- they're provisioned so you can wire up your own
+plan/apply/deploy pipeline against the same trust pattern if you want one.
 
 ### 2. Enable the remote backend
 
