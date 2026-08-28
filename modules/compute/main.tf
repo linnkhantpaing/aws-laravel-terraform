@@ -124,7 +124,7 @@ resource "aws_instance" "app" {
     http_endpoint = "enabled"
   }
 
-  user_data                   = file("${path.module}/user_data.sh")
+  user_data                   = templatefile("${path.module}/user_data.sh", { region = var.region })
   user_data_replace_on_change = false # editing the script must not rebuild the box
 
   tags = {

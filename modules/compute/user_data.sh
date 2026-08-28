@@ -56,8 +56,9 @@ systemctl daemon-reload
 systemctl enable supervisord
 
 # --- CodeDeploy agent --------------------------------------------------------
+# $${region} below is filled in by Terraform's templatefile() -- see modules/compute/main.tf
 cd /tmp
-wget "https://aws-codedeploy-ap-southeast-7.s3.ap-southeast-7.amazonaws.com/latest/install"
+wget "https://aws-codedeploy-${region}.s3.${region}.amazonaws.com/latest/install"
 chmod +x ./install
 ./install auto
 systemctl enable codedeploy-agent

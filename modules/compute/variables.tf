@@ -2,6 +2,11 @@ variable "name_prefix" {
   type = string
 }
 
+variable "region" {
+  description = "AWS region -- used to resolve the CodeDeploy agent install bucket"
+  type        = string
+}
+
 variable "subnet_id" {
   description = "Public subnet in AZ-a"
   type        = string

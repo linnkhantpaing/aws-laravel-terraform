@@ -56,6 +56,7 @@ module "compute" {
   source = "../../modules/compute"
 
   name_prefix       = var.name_prefix
+  region            = var.region
   subnet_id         = module.network.public_subnet_ids[0]
   security_group_id = module.security.app_sg_id
 

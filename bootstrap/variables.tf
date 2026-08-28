@@ -5,7 +5,14 @@ variable "region" {
 }
 
 variable "prefix" {
-  description = "Global name prefix. S3 bucket names must be globally unique."
+  description = <<-EOT
+    Global name prefix. S3 bucket names must be globally unique.
+
+    Must equal envs/prod's `bucket_prefix` -- the app-deploy IAM role below
+    grants access to "$${prefix}-artifacts", while envs/prod actually creates
+    the bucket named "$${bucket_prefix}-artifacts". A mismatch leaves the
+    deploy role pointing at a bucket that doesn't exist.
+  EOT
   type        = string
   default     = "myapp-storage"
 }

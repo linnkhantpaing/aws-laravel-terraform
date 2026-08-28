@@ -9,7 +9,7 @@ variable "name_prefix" {
 }
 
 variable "bucket_prefix" {
-  description = "Globally unique S3 prefix"
+  description = "Globally unique S3 prefix. Must equal bootstrap's `prefix` -- the app-deploy IAM role there grants access based on this same name."
   type        = string
   default     = "myapp-storage"
 }
