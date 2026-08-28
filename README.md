@@ -1,4 +1,4 @@
-# AWS Phase 1 Infrastructure — Laravel Reference Stack
+# aws-laravel-terraform
 
 Terraform for the Phase 1 architecture: single EC2 application server (Laravel 13 +
 React/Inertia + Reverb), RDS MySQL in private subnets, two S3 buckets, Secrets Manager,
