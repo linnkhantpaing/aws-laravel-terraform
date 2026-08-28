@@ -38,7 +38,8 @@ Note the outputs — you need `state_bucket` and the three role ARNs.
 
 ### 2. Enable the remote backend
 
-Uncomment the `backend "s3"` block in `envs/prod/backend.tf`.
+Uncomment the `backend "s3"` block in `envs/prod/backend.tf` and set `bucket` to the
+`state_bucket` output from step 1.
 
 If `terraform version` is below 1.10, remove `use_lockfile = true` and add a DynamoDB
 lock table to `bootstrap/` instead.
@@ -65,7 +66,7 @@ These four assumptions are baked into defaults and may be wrong for `ap-southeas
 aws ec2 describe-availability-zones --region ap-southeast-7 \
   --query "AvailabilityZones[].ZoneName"
 
-# MySQL minor version — default is 8.0.40
+# MySQL minor version — default is 8.0.46
 aws rds describe-db-engine-versions --engine mysql --region ap-southeast-7 \
   --query "DBEngineVersions[?starts_with(EngineVersion,'8.0')].EngineVersion" --output text
 
