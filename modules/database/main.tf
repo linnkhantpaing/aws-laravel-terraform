@@ -79,7 +79,13 @@ resource "aws_db_instance" "main" {
   # AWS generates the password, stores it in a secret it manages, and can
   # rotate it. The password never appears in Terraform state, plan output, or
   # your terminal -- which is why no `password` argument is declared.
-  manage_master_user_password = true
+  #
+  # master_user_secret_kms_key_id must be set explicitly here: without it,
+  # AWS encrypts the managed secret with the default aws/secretsmanager key
+  # instead of this key, which would make the EC2 role's "DecryptManagedSecret"
+  # kms:Decrypt grant below (on this exact key) point at the wrong key.
+  manage_master_user_password   = true
+  master_user_secret_kms_key_id = aws_kms_key.rds.arn
 
   allocated_storage     = var.allocated_storage
   max_allocated_storage = var.max_allocated_storage
