@@ -31,6 +31,12 @@ jobs:
       TF_VAR_admin_email: ${{ vars.ADMIN_EMAIL }}
       TF_VAR_admin_cidr: ${{ vars.ADMIN_CIDR }}
       TF_VAR_enable_ssh: ${{ vars.ENABLE_SSH }}
+      # GitHub withholds secrets and the OIDC token from pull_request runs
+      # triggered by forks (by design, so a malicious fork PR can't exfiltrate
+      # them) -- so a fork PR can never assume an AWS role here. Route those
+      # runs to a backend-less validate instead of letting them fail on
+      # "Configure AWS credentials" with a confusing error.
+      IS_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
 
     steps:
       - uses: actions/checkout@v4
@@ -39,27 +45,39 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
+      - name: Format check
+        run: terraform fmt -check -recursive ../..
+
+      - name: Init and validate (fork PR -- no AWS access)
+        if: env.IS_FORK == 'true'
+        run: |
+          echo "::notice::This PR is from a fork, so GitHub withholds the OIDC token and secrets needed to assume an AWS role here. Ran format check and a backend-less 'terraform validate' only -- a maintainer needs to review and re-plan before merging."
+          terraform init -backend=false
+          terraform validate
+
       - name: Configure AWS credentials
+        if: env.IS_FORK != 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_PLAN_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Format check
-        run: terraform fmt -check -recursive ../..
-
       - name: Init
+        if: env.IS_FORK != 'true'
         run: terraform init
 
       - name: Validate
+        if: env.IS_FORK != 'true'
         run: terraform validate
 
       - name: Plan
+        if: env.IS_FORK != 'true'
         id: plan
         run: terraform plan -no-color -input=false
         continue-on-error: true
 
       - name: Comment plan on PR
+        if: env.IS_FORK != 'true'
         uses: actions/github-script@v7
         env:
           # Passed as an env var, not spliced into the script below -- the plan
@@ -88,5 +106,5 @@ jobs:
             });
 
       - name: Fail if plan failed
-        if: steps.plan.outcome == 'failure'
+        if: env.IS_FORK != 'true' && steps.plan.outcome == 'failure'
         run: exit 1
