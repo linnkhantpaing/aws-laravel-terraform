@@ -12,6 +12,11 @@ variable "vpc_cidr" {
 variable "azs" {
   description = "Two availability zones. RDS requires a subnet group spanning 2+ AZs even for Single-AZ."
   type        = list(string)
+
+  validation {
+    condition     = length(var.azs) == 2
+    error_message = "Exactly two availability zones are required -- one public and one private subnet are created per AZ."
+  }
 }
 
 variable "region" {
