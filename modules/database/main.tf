@@ -26,9 +26,9 @@ resource "aws_kms_alias" "rds" {
 # ---------------------------------------------------------------------------
 # Parameter group
 #
-# Laravel needs utf8mb4 for 6-language i18n -- regional scripts and emoji both
-# break on plain utf8. MySQL 8 defaults are close but the collation is worth
-# pinning explicitly rather than inheriting.
+# Laravel needs utf8mb4 for multi-language i18n -- non-Latin scripts and emoji
+# both break on plain utf8. MySQL 8 defaults are close but the collation is
+# worth pinning explicitly rather than inheriting.
 # ---------------------------------------------------------------------------
 
 resource "aws_db_parameter_group" "main" {

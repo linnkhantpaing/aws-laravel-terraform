@@ -18,7 +18,7 @@ variable "security_group_id" {
 }
 
 variable "instance_class" {
-  description = "db.t4g.small (2GB) recommended over micro for a live-payments system"
+  description = "db.t4g.small (2GB) recommended over micro for a production workload"
   type        = string
   default     = "db.t4g.small"
 }
@@ -56,7 +56,7 @@ variable "backup_retention_days" {
 }
 
 variable "backup_window" {
-  description = "UTC. Default is 00:30-01:30, chosen for a UTC+6:30 local timezone."
+  description = "UTC. Pick a window during your lowest-traffic hours -- default here is an example."
   type        = string
   default     = "18:00-19:00"
 }

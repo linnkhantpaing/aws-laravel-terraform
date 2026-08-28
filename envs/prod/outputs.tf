@@ -1,5 +1,5 @@
 output "app_public_ip" {
-  description = "Point the GoDaddy A record here"
+  description = "Point your DNS provider's A record here"
   value       = module.compute.public_ip
 }
 

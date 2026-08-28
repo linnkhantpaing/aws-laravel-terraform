@@ -138,7 +138,7 @@ resource "aws_instance" "app" {
 }
 
 # ---------------------------------------------------------------------------
-# Elastic IP -- stable address for the GoDaddy A record
+# Elastic IP -- stable address for your registrar's A record
 # ---------------------------------------------------------------------------
 
 resource "aws_eip" "app" {

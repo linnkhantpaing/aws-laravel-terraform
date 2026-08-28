@@ -7,7 +7,7 @@ output "private_ip" {
 }
 
 output "public_ip" {
-  description = "Point your GoDaddy A record here"
+  description = "Point your DNS provider's A record here"
   value       = aws_eip.app.public_ip
 }
 

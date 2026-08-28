@@ -101,7 +101,7 @@ The RDS master password is the exception — AWS generates and stores it
 | Multi-AZ RDS | Phase 4 trigger: an explicit business HA requirement |
 | ElastiCache | Phase 2. A single Reverb process needs no pub/sub backplane |
 | ALB | Phase 3. Nginx terminates TLS on the instance via Let's Encrypt |
-| Route 53 | GoDaddy holds the domain — point an A record at `app_public_ip` |
+| Route 53 | Domain is registered elsewhere — point an A record at `app_public_ip` |
 | Staging environment | Doubles the bill; add `envs/staging/` by copying `envs/prod/` |
 
 ## Security notes
