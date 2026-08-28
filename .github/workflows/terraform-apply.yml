@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  TF_VERSION: "1.9.8"
+  TF_VERSION: "1.10.0" # must be >= 1.10 -- see envs/prod/providers.tf
   AWS_REGION: ap-southeast-7
 
 jobs:
