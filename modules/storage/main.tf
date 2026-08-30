@@ -32,9 +32,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "app" {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256" # SSE-S3 -- AWS-managed keys, no KMS costs/limits
     }
-    # Only actually reduces cost/API calls under SSE-KMS -- inert with AES256
-    # above, kept here in case this bucket ever switches to a KMS key.
-    bucket_key_enabled = true
   }
 }
 
