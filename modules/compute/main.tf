@@ -1,5 +1,9 @@
 # ---------------------------------------------------------------------------
 # AMI -- latest Amazon Linux 2023, resolved at plan time
+#
+# This path is a public parameter AWS itself maintains and updates whenever a
+# new AL2023 AMI ships -- reading it here means every `terraform plan` picks
+# up the current AMI ID for this region without you tracking IDs by hand.
 # ---------------------------------------------------------------------------
 
 data "aws_ssm_parameter" "al2023" {
@@ -28,6 +32,8 @@ resource "aws_iam_role" "app" {
   assume_role_policy = data.aws_iam_policy_document.assume.json
 }
 
+# EC2 can't attach an IAM role directly -- an instance profile is the thin
+# wrapper AWS requires between the two. One role, one profile, both here.
 resource "aws_iam_instance_profile" "app" {
   name = "${var.name_prefix}-ec2-app"
   role = aws_iam_role.app.name
@@ -113,10 +119,10 @@ resource "aws_instance" "app" {
   iam_instance_profile   = aws_iam_instance_profile.app.name
 
   root_block_device {
-    volume_type           = "gp3"
+    volume_type           = "gp3" # general-purpose SSD, better baseline performance than gp2
     volume_size           = var.root_volume_size
-    encrypted             = true
-    delete_on_termination = true
+    encrypted             = true # EBS encryption at rest, using the AWS-managed EBS key
+    delete_on_termination = true # don't leave an orphaned volume behind if the instance is destroyed
   }
 
   metadata_options {
@@ -142,7 +148,7 @@ resource "aws_instance" "app" {
 # ---------------------------------------------------------------------------
 
 resource "aws_eip" "app" {
-  domain   = "vpc"
+  domain   = "vpc" # allocate for use inside a VPC (the only option on modern accounts, but still required)
   instance = aws_instance.app.id
 
   tags = { Name = "${var.name_prefix}-eip-app" }

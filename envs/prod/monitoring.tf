@@ -21,6 +21,9 @@ resource "aws_sns_topic_subscription" "admin_email" {
 
 # --- EC2 ---------------------------------------------------------------------
 
+# evaluation_periods x period = how long a breach has to persist before the
+# alarm actually fires -- 2 x 300s = 80%+ CPU sustained for 10 minutes, not
+# just a single momentary spike.
 resource "aws_cloudwatch_metric_alarm" "ec2_cpu" {
   alarm_name          = "${var.name_prefix}-ec2-cpu-high"
   comparison_operator = "GreaterThanThreshold"
@@ -32,7 +35,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_cpu" {
   threshold           = 80
   alarm_description   = "EC2 CPU above 80% for 10 minutes"
   alarm_actions       = [aws_sns_topic.alerts.arn]
-  ok_actions          = [aws_sns_topic.alerts.arn]
+  ok_actions          = [aws_sns_topic.alerts.arn] # also notify once CPU drops back below threshold
 
   dimensions = { InstanceId = module.compute.instance_id }
 }

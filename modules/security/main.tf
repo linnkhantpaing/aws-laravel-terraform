@@ -1,4 +1,10 @@
 # ---------------------------------------------------------------------------
+# Security groups are stateful virtual firewalls attached to ENIs/instances:
+# every rule below is an ALLOW -- there's no explicit "deny", traffic that
+# doesn't match any rule is dropped by default. Return traffic for anything
+# already allowed in is let back out automatically (and vice versa), which is
+# why the RDS and VPC-endpoint groups below need no egress rules of their own.
+#
 # All security groups live here so that resources referencing each other's SGs
 # do not create a module-level dependency cycle.
 #
@@ -53,7 +59,7 @@ resource "aws_vpc_security_group_egress_rule" "app_all" {
   security_group_id = aws_security_group.app.id
   description       = "Outbound: packages, AI APIs, Bunny Stream, SMTP"
   cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1"
+  ip_protocol       = "-1" # "-1" = all protocols/ports, AWS's way of saying "any"
 }
 
 # --- RDS ---------------------------------------------------------------------
@@ -70,6 +76,9 @@ resource "aws_security_group" "db" {
   }
 }
 
+# referenced_security_group_id (instead of a CIDR) scopes this rule to "any
+# ENI wearing the app SG" -- it tracks the app servers automatically even if
+# their IPs change, rather than a static IP range that could drift stale.
 resource "aws_vpc_security_group_ingress_rule" "db_mysql" {
   security_group_id            = aws_security_group.db.id
   description                  = "MySQL from application server"

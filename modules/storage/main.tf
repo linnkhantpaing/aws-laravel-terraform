@@ -30,8 +30,10 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "app" {
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      sse_algorithm = "AES256" # SSE-S3 -- AWS-managed keys, no KMS costs/limits
     }
+    # Only actually reduces cost/API calls under SSE-KMS -- inert with AES256
+    # above, kept here in case this bucket ever switches to a KMS key.
     bucket_key_enabled = true
   }
 }
@@ -52,7 +54,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "app" {
   rule {
     id     = "expire-noncurrent-versions"
     status = "Enabled"
-    filter {}
+    filter {} # empty filter = applies to every object in the bucket
 
     noncurrent_version_expiration {
       noncurrent_days = var.noncurrent_version_days
@@ -157,6 +159,9 @@ data "aws_iam_policy_document" "app_tls_only" {
       "${aws_s3_bucket.app.arn}/*",
     ]
 
+    # type/identifiers = "*" means this statement applies to every principal,
+    # not just this account -- combined with effect = "Deny" below, that's
+    # what makes it a blanket "reject any plaintext request" rule.
     principals {
       type        = "*"
       identifiers = ["*"]
@@ -164,7 +169,7 @@ data "aws_iam_policy_document" "app_tls_only" {
 
     condition {
       test     = "Bool"
-      variable = "aws:SecureTransport"
+      variable = "aws:SecureTransport" # true when the request came in over HTTPS
       values   = ["false"]
     }
   }
@@ -188,6 +193,9 @@ data "aws_iam_policy_document" "artifacts_tls_only" {
       "${aws_s3_bucket.artifacts.arn}/*",
     ]
 
+    # type/identifiers = "*" means this statement applies to every principal,
+    # not just this account -- combined with effect = "Deny" below, that's
+    # what makes it a blanket "reject any plaintext request" rule.
     principals {
       type        = "*"
       identifiers = ["*"]
@@ -195,7 +203,7 @@ data "aws_iam_policy_document" "artifacts_tls_only" {
 
     condition {
       test     = "Bool"
-      variable = "aws:SecureTransport"
+      variable = "aws:SecureTransport" # true when the request came in over HTTPS
       values   = ["false"]
     }
   }

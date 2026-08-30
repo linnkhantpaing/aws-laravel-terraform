@@ -1,3 +1,6 @@
+# DB Subnet Group -- tells RDS which subnets it's allowed to place its
+# network interface(s) in. Required even for a Single-AZ instance; RDS still
+# needs a group spanning 2+ AZs in case you switch to Multi-AZ later.
 resource "aws_db_subnet_group" "main" {
   name        = "${var.name_prefix}-db-subnet-group"
   description = "Private subnets across two AZs"
@@ -12,8 +15,8 @@ resource "aws_db_subnet_group" "main" {
 
 resource "aws_kms_key" "rds" {
   description             = "${var.name_prefix} RDS storage encryption"
-  deletion_window_in_days = 30
-  enable_key_rotation     = true
+  deletion_window_in_days = 30   # mandatory pending-deletion buffer (7-30 days) before AWS destroys the key
+  enable_key_rotation     = true # AWS rotates the underlying key material yearly; the key ID/ARN never changes
 
   tags = { Name = "${var.name_prefix}-kms-rds" }
 }
@@ -88,14 +91,14 @@ resource "aws_db_instance" "main" {
   master_user_secret_kms_key_id = aws_kms_key.rds.arn
 
   allocated_storage     = var.allocated_storage
-  max_allocated_storage = var.max_allocated_storage
-  storage_type          = "gp3"
-  storage_encrypted     = true
+  max_allocated_storage = var.max_allocated_storage # ceiling for storage autoscaling -- RDS grows the volume on demand up to this
+  storage_type          = "gp3"                     # general-purpose SSD; better baseline IOPS/throughput than gp2 at the same price
+  storage_encrypted     = true                      # encryption at rest for the data volume, using the KMS key below
   kms_key_id            = aws_kms_key.rds.arn
 
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [var.security_group_id]
-  publicly_accessible    = false
+  publicly_accessible    = false # no public IP -- reachable only from inside the VPC
   multi_az               = false # Phase 4 trigger: explicit HA requirement
 
   parameter_group_name = aws_db_parameter_group.main.name
@@ -108,11 +111,13 @@ resource "aws_db_instance" "main" {
   auto_minor_version_upgrade = false # control your own upgrade timing
 
   deletion_protection       = var.deletion_protection
-  skip_final_snapshot       = false
+  skip_final_snapshot       = false # false = take one last snapshot before deletion (named below)
   final_snapshot_identifier = "${var.name_prefix}-mysql-final-${formatdate("YYYYMMDDhhmmss", timestamp())}"
 
   performance_insights_enabled = false # 7 days is free; enable if needed
 
+  # Streams these MySQL log types to CloudWatch Logs so they're searchable
+  # and retained even after the instance is gone.
   enabled_cloudwatch_logs_exports = ["error", "slowquery"]
 
   lifecycle {

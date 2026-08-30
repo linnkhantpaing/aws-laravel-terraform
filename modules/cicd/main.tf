@@ -31,7 +31,7 @@ resource "aws_iam_role_policy_attachment" "codedeploy" {
 
 resource "aws_codedeploy_app" "main" {
   name             = "${var.name_prefix}-app"
-  compute_platform = "Server"
+  compute_platform = "Server" # EC2/on-premises target, as opposed to "Lambda" or "ECS"
 }
 
 # ---------------------------------------------------------------------------
@@ -46,6 +46,9 @@ resource "aws_codedeploy_deployment_group" "main" {
   deployment_group_name = "${var.name_prefix}-prod"
   service_role_arn      = aws_iam_role.codedeploy.arn
 
+  # AWS-predefined config: with one instance this just means "deploy, don't
+  # split traffic" -- the name matters more once there's a fleet to roll
+  # through gradually.
   deployment_config_name = "CodeDeployDefault.OneAtATime"
 
   deployment_style {
@@ -68,6 +71,10 @@ resource "aws_codedeploy_deployment_group" "main" {
     events  = ["DEPLOYMENT_FAILURE"]
   }
 
+  # dynamic block: renders the trigger_configuration below only when a topic
+  # ARN is actually provided (a 1-element list), and renders nothing at all
+  # for the default empty string -- Terraform has no "if this block" syntax,
+  # so looping zero or one times is the idiomatic way to make a block optional.
   dynamic "trigger_configuration" {
     for_each = var.sns_topic_arn != "" ? [1] : []
 

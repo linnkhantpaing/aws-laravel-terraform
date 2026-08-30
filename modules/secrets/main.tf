@@ -48,6 +48,9 @@ locals {
   }
 }
 
+# for_each (keyed by name, e.g. "reverb") rather than count -- adding or
+# removing an entry from locals.secrets won't reshuffle and recreate the
+# other secrets the way a count-based list index shift would.
 resource "aws_secretsmanager_secret" "this" {
   for_each = local.secrets
 

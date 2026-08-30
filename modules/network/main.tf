@@ -15,14 +15,19 @@ locals {
   private_cidrs = [cidrsubnet(var.vpc_cidr, 4, 2), cidrsubnet(var.vpc_cidr, 4, 3)]
 }
 
+# VPC -- an isolated, private network in this AWS account/region. Everything
+# else in this module (subnets, routing, endpoints) lives inside it.
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
-  enable_dns_support   = true
+  enable_dns_support   = true # turns on the VPC's internal DNS resolver (the .2 address)
   enable_dns_hostnames = true # required for RDS endpoint resolution
 
   tags = { Name = "${var.name_prefix}-vpc" }
 }
 
+# Internet Gateway -- the VPC's only door to the public internet. Attaching
+# it does nothing by itself; a subnet only gets internet access once its
+# route table has a route pointing traffic at this resource (below).
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
   tags   = { Name = "${var.name_prefix}-igw" }
@@ -76,12 +81,16 @@ resource "aws_route_table" "public" {
   tags   = { Name = "${var.name_prefix}-rt-public" }
 }
 
+# "Send anything not otherwise matched to the Internet Gateway" -- this one
+# route is what actually makes the subnets below "public".
 resource "aws_route" "public_internet" {
   route_table_id         = aws_route_table.public.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.main.id
 }
 
+# Route tables aren't tied to subnets by themselves -- this association is
+# what makes each public subnet actually use the route table above.
 resource "aws_route_table_association" "public" {
   count          = 2
   subnet_id      = aws_subnet.public[count.index].id

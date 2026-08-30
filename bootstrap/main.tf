@@ -1,3 +1,5 @@
+# Resolves to the account/user running `terraform apply` -- used below to
+# build the reverb secret's ARN without hardcoding an account ID.
 data "aws_caller_identity" "current" {}
 
 locals {
@@ -68,7 +70,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "tfstate" {
 
 resource "aws_iam_openid_connect_provider" "github" {
   url            = "https://token.actions.githubusercontent.com"
-  client_id_list = ["sts.amazonaws.com"]
+  client_id_list = ["sts.amazonaws.com"] # the OIDC "audience" -- must match aud in the trust conditions below
 
   # AWS no longer validates this thumbprint for GitHub -- it uses its own
   # trusted CA store. The value is a required-field placeholder.
