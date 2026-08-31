@@ -1,5 +1,5 @@
 # aws-laravel-terraform
-
+![Phase 1 AWS architecture](docs/architecture.png)
 Terraform for the Phase 1 architecture: single EC2 application server (Laravel 13 +
 React/Inertia + Reverb), RDS MySQL in private subnets, two S3 buckets, Secrets Manager,
 and CodeDeploy — all in `ap-southeast-7` (example region; swap for whichever region you deploy to).
